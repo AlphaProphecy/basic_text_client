@@ -9,3 +9,6 @@ edition = "2021"
 
 pnet = "0.31.0"
 pnet_datalink = "0.31.0"
+tokio = "0.1.22"
+bytes = "1.1.0"
+futures = "0.3.21"
