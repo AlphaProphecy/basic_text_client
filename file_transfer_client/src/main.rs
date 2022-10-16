@@ -1,17 +1,9 @@
-
-mod reciever;
+mod receiver;
 mod sender;
 
-
-
-//use bytes::BytesMut;
-//use futures::{Future, Stream};
-//use tokio::codec::{BytesCodec, FramedRead};
-//use tokio::runtime::Runtime;
 use std::env;
 
-// Invoke as echo <interface name>
-fn main(){
+fn main() {
     let mode_string = match env::args().nth(1) {
         Some(value) => value,
         None => "send".to_string(),
@@ -27,18 +19,13 @@ fn main(){
         None => "127.0.0.1".to_string(),
     };
 
-    if mode_string == "send"{
-        sender::send(path_string, ip_string);
+    let port = ip_string.split(":").nth(1).expect("You need a port").parse::<u16>().expect("The port is ill formatted");
 
-    } else if mode_string == "recieve" {
-        match reciever::recieve(5555,path_string){
-            Ok(_) => println!("Recieved"),
-            Err(why) => panic!("Error recieving: {}", why)
-        }
-        
+    if mode_string == "send" {
+        sender::send(path_string, ip_string);
+    } else if mode_string == "receive" {
+        receiver::receive(port, path_string);
     } else {
         println!("Nice work");
-        
     }
-
 }

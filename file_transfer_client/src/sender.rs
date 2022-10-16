@@ -1,24 +1,45 @@
-extern crate tokio;
+use std::io;
+use std::io::prelude::*;
+use std::io::BufWriter;
+use std::net::TcpStream;
 use std::path::Path;
-use tokio::prelude::Future;
 
+pub fn send(path_string: String, ip_string: String) {
 
-pub fn send(path_string: String, ip_string: String){
-    
-    //println!("{}",ip_string);
-    //println!("IP to connect to: {}", ip_string);
+    let _path = Path::new(&path_string);
 
-    let path = Path::new(&path_string);
+    println!("{}", ip_string);
+    let stream = TcpStream::connect(ip_string).expect("Failed to connect");
+    handle_client(stream);
+}
 
-    let task = tokio::fs::File::open(path_string).and_then(|file| {
-        // do something with the file ...
-        file.metadata().map(|md| println!("{:?}", md))
-    }).map_err(|e| {
-        // handle errors
-        eprintln!("IO error: {:?}", e);
-    });
+fn handle_client(tcp_stream: TcpStream) {
+    let mut stream = BufWriter::new(tcp_stream);
+    println!("Sending Data: ");
 
+    loop {
+        let mut buffer = String::new();
+        let stdin = io::stdin();
+        stdin
+            .read_line(&mut buffer)
+            .expect("Error when reading line");
 
-    tokio::run(task);
-    path_string.to_lowercase();
+        if buffer.trim().is_empty() {
+            println!("Empty line received closing connection");
+            break;
+        }
+
+        let _recv_data_size = stream
+            .write(&mut buffer.as_bytes())
+            .expect("Error when reading line");
+
+        match stream.flush() {
+            Ok(_) => continue,
+            Err(_) => {
+                println!("Remote connection Dropped");
+                break;
+            }
+        }
+    }
+    drop(stream);
 }
